@@ -53,7 +53,6 @@ INSTALLED_APPS = (
     'crispy_forms', 
     'reversion',
     'django_crontab',
-    'modelclone',
     
 )
 MIDDLEWARE_CLASSES = (
@@ -142,6 +141,7 @@ MEDIA_ROOT = '/media/'
 LOGIN_URL = '/login/'
 CRONJOBS = (
     
-    ('31 11 * * *', 'cm_vrms.cm_vrms_baseline.views.update_db_from_work_for_crontab'),
-
+    #('16 19 * * *', 'cm_vrms.cm_vrms_baseline.views.update_db_from_work_for_crontab'),
+    ('0 8 * * *', 'django.core.management.call_command', ['updateCommand']),
+    #('02 19 * * *','cm_vrms.cm_vrms_baseline.views.print_hello', '>test_func_job.log'),
 )

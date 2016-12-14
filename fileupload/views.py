@@ -25,7 +25,9 @@ from django.http import JsonResponse,StreamingHttpResponse
 from data_mine import sycn_sys_ver_info
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
-from cm_vrms_upload.settings import UPLOAD_FILE_PATH
+
+#UPLOAD_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)) + '/cm_vrms_upload'
+#UPLOAD_FILE_PATH = '/home/bea/app/httpd/cm_vrms/cm_vrms_upload'
 
 
 '''读取系统配置信息'''

@@ -29,7 +29,7 @@ for name_val in name_info:
     map_name=name_val.map_sysname.encode("utf-8")
     name_map_info[raw_name]=map_name
 word_name_map=dict([[name_map_info[val],val] for val in name_map_info])
-test_type_map_info = {'主系统':'zxt','升级联测':'sjlc','无影响联测':'wyxlc','未回复':'whf','':''}
+test_type_map_info = {'主系统':'zxt','升级联测':'sjlc','无升级测试':'wyxlc','未回复':'whf','':''}
 word_test_type_map = dict([[test_type_map_info[val],val] for val in test_type_map_info]) 
 ProjectStage_map_info = {'测试准备':'cszb','UAT1测试':'uat1cs','UAT1完成':'uat1wc','验收流程':'yslc','验收测试':'yscs','模拟流程':'mnlc','模拟测试':'mncs','模拟完成':'mnwc','已上线':'ysx','':'','NA':'NA'}
 word_projectStage_map = dict([[ProjectStage_map_info[val],val] for val in ProjectStage_map_info])
@@ -42,7 +42,7 @@ word_versionquality_map = dict([[VersionQuality_map_info[val],val] for val in Ve
 Workload_map_info = {'超签报':'cqb','正常':'zc','超采购':'ccg','':'','NA':'NA'}    
 word_workload_map = dict([[Workload_map_info[val],val] for val in Workload_map_info])
 
-node_symbol = {'主系统':"circle",'升级联测':"circle",'无影响联测':"rectangle",'未回复':"diamond",}
+node_symbol = {'主系统':"circle",'升级联测':"circle",'无升级测试':"rectangle",'未回复':"diamond",}
 category_number = {"正常":"0","延期":"1","暂停":"2","作废":"3","NA":"4"}
 node_projectstage_node_val_map = {'测试准备':'1','UAT1测试':'2','UAT1完成':'3','验收流程':'4','验收测试':'5','模拟流程':'6','模拟测试':'7','模拟完成':'8','已上线':'9'}
 
@@ -68,7 +68,7 @@ def test_report_index(request):
         
     cursor1 = connection.cursor() 
     cursor2 = connection.cursor() 
-    cursor1.execute("select tb2.PlanTime,tb1.Main_SysName,tb1.Main_VersionNum,tb2.ProjectName,tb2.OverallSchedule,tb2.ProjectStage, count(case when tb1.TestType='sjlc' then tb1.TestType end) AS testtype1, count(case when tb1.TestType='wyxlc' then tb1.TestType end) AS testtype2 from test_report_report_detail tb1  LEFT JOIN test_report_report_detail tb2 ON tb1.Main_SysName=tb2.Main_SysName and tb1.Main_VersionNum=tb2.Main_VersionNum where tb2.TestType='zxt' GROUP BY tb1.Main_SysName,tb1.Main_VersionNum HAVING   PlanTime BETWEEN '"+str_need_date_time_start+"' and '"+str_need_date_time_end+"' order by tb2.PlanTime ;")
+    cursor1.execute("select tb2.PlanTime,tb1.Main_SysName,tb1.Main_VersionNum,tb2.ProjectName,tb2.OverallSchedule,tb2.ProjectStage, count(case when tb1.TestType='sjlc' then tb1.TestType end) AS testtype1, count(case when tb1.TestType='wyxlc' then tb1.TestType end) AS testtype2 from test_report_Report_Detail tb1  LEFT JOIN test_report_Report_Detail tb2 ON tb1.Main_SysName=tb2.Main_SysName and tb1.Main_VersionNum=tb2.Main_VersionNum where tb2.TestType='zxt' GROUP BY tb1.Main_SysName,tb1.Main_VersionNum HAVING   PlanTime BETWEEN '"+str_need_date_time_start+"' and '"+str_need_date_time_end+"' order by tb2.PlanTime ;")
     report_result = cursor1.fetchall()
     cursor1.close()
     need_out_list = ""
@@ -94,7 +94,7 @@ def test_report_index(request):
             sys_name,sys_version = Main_SysName_ver.split("V")
             sys_name=name_map_info.get(sys_name.encode("utf-8"),"")
             sys_version = "V"+sys_version
-            cursor2.execute("select SystemName,VersionNum,ProjectName,PlanTime,OverallSchedule,TestType,ProjectStage from test_report_report_detail where Main_SysName = '"+sys_name+"' and Main_VersionNum='"+sys_version+"' and TestType!='zxt' order by SystemName")
+            cursor2.execute("select SystemName,VersionNum,ProjectName,PlanTime,OverallSchedule,TestType,ProjectStage from test_report_Report_Detail where Main_SysName = '"+sys_name+"' and Main_VersionNum='"+sys_version+"' and TestType!='zxt' order by SystemName")
             new_report_result = cursor2.fetchall()
             need_out_list += "<tbody class='need_hide'>"
             for tmp_val in new_report_result:
@@ -144,14 +144,14 @@ def test_report_node(request):
         return HttpResponseRedirect('/test_report_node/')#重定向到版本页之初
     
     
-    #test_type_map_info = {'主系统':'zxt','升级联测':'sjlc','无影响联测':'wyxlc','未回复':'whf','':''}
+    #test_type_map_info = {'主系统':'zxt','升级联测':'sjlc','无升级测试':'wyxlc','未回复':'whf','':''}
     #ProjectStage_map_info = {'需求分析':'xqfx','用例设计':'ylsj','UAT1阶段':'uat1jd','系统测试':'xtcs','验收流程':'yslc','验收阶段':'ysjd','模拟流程':'mnlc','模拟阶段':'mnjd','模拟测试':'mncs','模拟完成':'mnwc','生产上线':'scsx','':''}
     #OverallSchedule_map_info = {'正常':'zc','延期':'yq','暂停':'zt','作废':'zf','':''}
     #ManpowerInput_map_info = {'人力紧张':'rljz','人力充足':'rlcz','人力不足':'rlbz','':''}
     #VersionQuality_map_info = {'质量一般':'zlyb','质量较好':'zljh','质量较差':'zljc','':''}
     #Workload_map_info = {'超签报工作量':'cqbgzl','正常':'zc','未立项':'wlx','':''}    
 
-    #主系统：圆形'circle'；升级联测：圆形'circle'；无影响联测：矩形'rectangle'；未回复：菱形 'diamond'
+    #主系统：圆形'circle'；升级联测：圆形'circle'；无升级测试：矩形'rectangle'；未回复：菱形 'diamond'
     #正常:0;延期:1;暂停:2;作废:3
     node_table_info_list = []#寄存每个node对应的table信息
     target_node_info = []#寄存节点信息
@@ -186,7 +186,7 @@ def test_report_node(request):
             target_node_info.append(tmp_node_str)
         elif tmp_node != source_node_info:
             tmp_node = "{}\\n{}".format(tmp_node,TestType)
-            #{category:2, name: '本币CSTPV4.2.77.0\n无影响联测', value : 20,symbol:'star'},
+            #{category:2, name: '本币CSTPV4.2.77.0\n无升级测试', value : 20,symbol:'star'},
             tmp_node_str = "{category:%s, name: '%s', value : 35,symbol:'%s'},"%(category_number.get(OverallSchedule,"0"),tmp_node,node_symbol.get(TestType,"star"))
             target_node_info.append(tmp_node_str)
             #{source : '外汇交易系统V1.8.5.0', target : 'C-SwapV1.3.0.0\n升级联测', weight :5},
@@ -218,7 +218,7 @@ def test_report_bar(request):
 def test_report_charts(request):
     c = Context({'STATIC_URL': '/static/'})
     cursor1 = connection.cursor() 
-    cursor1.execute("select count(id),OverallSchedule from test_report_report_detail group by OverallSchedule ORDER BY count(id);")
+    cursor1.execute("select count(id),OverallSchedule from test_report_Report_Detail group by OverallSchedule ORDER BY count(id);")
     overallschedule_result = cursor1.fetchall()
     cursor1.close()
     overallschedule_data=[]
@@ -233,7 +233,7 @@ def test_report_charts(request):
             overallschedule_namedata.append(overallschedule_name)
         
     cursor2 = connection.cursor() 
-    cursor2.execute("select count(id),VersionQuality from test_report_report_detail group by VersionQuality ORDER BY count(id);")
+    cursor2.execute("select count(id),VersionQuality from test_report_Report_Detail group by VersionQuality ORDER BY count(id);")
     versionquality_result = cursor2.fetchall()
     cursor2.close()
     versionquality_data=[]
@@ -247,7 +247,7 @@ def test_report_charts(request):
             versionquality_namedata.append(versionquality_name)
         
     cursor3 = connection.cursor() 
-    cursor3.execute("select count(id),ManpowerInput from test_report_report_detail group by ManpowerInput ORDER BY count(id);")
+    cursor3.execute("select count(id),ManpowerInput from test_report_Report_Detail group by ManpowerInput ORDER BY count(id);")
     manpowerinput_result = cursor3.fetchall()
     cursor3.close()
     manpowerinput_data=[]
@@ -261,7 +261,7 @@ def test_report_charts(request):
             manpowerinput_namedata.append(manpowerinput_name)
         
     cursor4 = connection.cursor() 
-    cursor4.execute("select count(id),Workload from test_report_report_detail group by Workload ORDER BY count(id);")
+    cursor4.execute("select count(id),Workload from test_report_Report_Detail group by Workload ORDER BY count(id);")
     workload_result = cursor4.fetchall()
     cursor4.close()
     workload_data=[]
@@ -275,7 +275,7 @@ def test_report_charts(request):
             workload_namedata.append(workload_name)
         
     cursor5 = connection.cursor() 
-    cursor5.execute("select count(id),ProjectStage from test_report_report_detail group by ProjectStage ORDER BY count(id);")
+    cursor5.execute("select count(id),ProjectStage from test_report_Report_Detail group by ProjectStage ORDER BY count(id);")
     projectstage_result = cursor5.fetchall()
     cursor5.close()
     projectstage_namedata = []

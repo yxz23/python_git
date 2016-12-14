@@ -138,7 +138,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.abspath(os.path.dirname(__file__)) + '/media/'
 MEDIA_ROOT = '/media/'
 
-UPLOAD_FILE_PATH = os.path.abspath(os.path.dirname(__file__)).replace('\\', '/')
 
 LOGIN_URL = '/login/'
 CRONJOBS = (

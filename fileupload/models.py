@@ -10,8 +10,9 @@ import datetime
 import time
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
-from cm_vrms_upload.settings import UPLOAD_FILE_PATH
 
+UPLOAD_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)).replace('\\', '/') + '/cm_vrms_upload'
+#UPLOAD_FILE_PATH = '/home/bea/app/httpd/cm_vrms/cm_vrms_upload'
 
 def singleton(cls, *args, **kw):
     '''单例实现'''  
@@ -242,7 +243,7 @@ class Report_Detail(models.Model):
         map_name=val.map_sysname.encode("utf-8")
         name_map[map_name]=raw_name
     Name_CHOICE = tuple(sorted(name_map.iteritems(), key = lambda asd:asd[0]))
-    TestType_CHOICES = (('zxt','主系统'),('sjlc','升级联测'),('wyxlc','无影响联测'),('whf','未回复'))
+    TestType_CHOICES = (('zxt','主系统'),('sjlc','升级联测'),('wyxlc','无升级测试'),('whf','未回复'))
     ProjectStage_CHOICES = (('cszb','测试准备'),('uat1cs','UAT1测试'),('uat1wc','UAT1完成'),('yslc','验收流程'),('yslc','验收流程'),('yscs','验收测试'),('mnlc','模拟流程'),('mncs','模拟测试'),('mnwc','模拟完成'),('ysx','已上线'),('NA','NA'))
     OverallSchedule_CHOICES = (('zc','正常'),('yq','延期'),('zt','暂停'),('zf','作废'),('NA','NA'))
     ManpowerInput_CHOICES = (('rljz','人力紧张'),('rlcz','人力充足'),('rlbz','人力不足'),('NA','NA'))
@@ -332,7 +333,7 @@ class Report_DetailInfo(object):
             raw_name=val.SysName.encode("utf-8")
             map_name=val.map_sysname.encode("utf-8")
             name_map_dict[raw_name]=map_name
-        test_type_map_info = {'主系统':'zxt','升级联测':'sjlc','无影响联测':'wyxlc','未回复':'whf','空':''}
+        test_type_map_info = {'主系统':'zxt','升级联测':'sjlc','无升级测试':'wyxlc','未回复':'whf','空':''}
         ProjectStage_map_info = {'测试准备':'cszb','UAT1测试':'uat1cs','UAT1完成':'uat1wc','验收流程':'yslc','验收测试':'yscs','模拟流程':'mnlc','模拟测试':'mncs','模拟完成':'mnwc','已上线':'ysx','空':'','NA':'NA'}
         OverallSchedule_map_info = {'正常':'zc','延期':'yq','暂停':'zt','作废':'zf','NA':'NA','空':''}
         ManpowerInput_map_info = {'人力紧张':'rljz','人力充足':'rlcz','人力不足':'rlbz','空':'','NA':'NA'}
