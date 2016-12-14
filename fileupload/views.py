@@ -25,6 +25,7 @@ from django.http import JsonResponse,StreamingHttpResponse
 from data_mine import sycn_sys_ver_info
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from cm_vrms_upload.settings import UPLOAD_FILE_PATH
 
 
 '''读取系统配置信息'''
@@ -823,10 +824,10 @@ def upload_file(request):
 
 
 def handle_uploaded_file(f):#将文件上传到指定位置
-    file_path = os.getcwd() + '\\cm_vrms_upload\\media\\pictures'
+    file_path = UPLOAD_FILE_PATH + "/media/pictures"
     if not os.path.exists(file_path):
         os.makedirs(file_path)
-    f_path = file_path+"\\"+f.name
+    f_path = file_path+"/"+f.name
 
     with open(f_path, 'wb+') as info:
         for chunk in f.chunks():

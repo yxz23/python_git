@@ -10,6 +10,7 @@ import datetime
 import time
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
+from cm_vrms_upload.settings import UPLOAD_FILE_PATH
 
 
 def singleton(cls, *args, **kw):
@@ -166,8 +167,8 @@ class SysNameInfo(object):
     
     def update_conf_from_file(self,request,filename="SysName_conf.xlsx"):
         #上传文件后触发,更新文件且插入数据库
-        file_path = os.getcwd()
-        in_path = file_path+"\\cm_vrms_upload\\media\\pictures\\"
+        file_path = UPLOAD_FILE_PATH
+        in_path = file_path + "/media/pictures/"
         upload_file_path=in_path+filename#上传文件的地址
         user_name = request.user.username
         upload_time = time.strftime('%Y%m%d%H%M', time.localtime())
@@ -272,7 +273,7 @@ class Report_Detail(models.Model):
     
     def save(self, *args, **kwargs):
         '''重写保存方法'''
-        self.Reason = self.Reason.replace('\t', '  ')
+        self.Reason = self.Reason.replace('\t', '  ')#去掉文本中的‘\t’字符
         super(Report_Detail, self).save(*args, **kwargs) # Call the "real" save() method.
         tmp_info = Report_DetailInfo()#更新sys_info
         tmp_info.refresh_sys_info()
@@ -306,8 +307,8 @@ class Report_DetailInfo(object):
     
     def update_conf_from_file(self,request,filename="Report_Detail_conf.xlsx"):
         #上传文件后触发,更新文件且插入数据库
-        file_path = os.getcwd()
-        in_path = file_path+"\\cm_vrms_upload\\media\\pictures\\"
+        file_path = UPLOAD_FILE_PATH
+        in_path = file_path + "/media/pictures/"
         upload_file_path = in_path + filename  # 上传文件的地址
         user_name = request.user.username
         upload_time = time.strftime('%Y%m%d%H%M', time.localtime())
@@ -710,8 +711,8 @@ class DataExInfo(object):
     
     def update_conf_from_file(self,request,filename="dataex_conf.xlsx"):
         #上传文件后触发,更新文件且插入数据库
-        file_path = os.getcwd()
-        in_path = file_path+"\\cm_vrms_upload\\media\\pictures\\"
+        file_path = UPLOAD_FILE_PATH
+        in_path = file_path + "/media/pictures/"
         upload_file_path=in_path+filename#上传文件的地址
         user_name = request.user.username
         upload_time = time.strftime('%Y%m%d%H%M', time.localtime())
@@ -886,8 +887,8 @@ class SystemInfo(object):
     
     def update_conf_from_file(self,request,filename="system_conf.xlsx"):
         #上传文件后触发,更新文件且插入数据库
-        file_path = os.getcwd()
-        in_path = file_path+"\\cm_vrms_upload\\media\\pictures\\"
+        file_path = UPLOAD_FILE_PATH
+        in_path = file_path + "/media/pictures/"
         upload_file_path=in_path+filename#上传文件的地址
         user_name = request.user.username
         upload_time = time.strftime('%Y%m%d%H%M', time.localtime())
@@ -1117,8 +1118,8 @@ class VersionInfo(object):
             
     def update_conf_from_file(self,request,filename="version_conf.xlsx"):
         #上传文件后触发,更新文件且插入数据库
-        file_path = os.getcwd()
-        in_path = file_path + "\\cm_vrms_upload\\media\\pictures\\"
+        file_path = UPLOAD_FILE_PATH
+        in_path = file_path + "/media/pictures/"
         upload_file_path = in_path + filename  # 上传文件的地址
         user_name = request.user.username
         upload_time = time.strftime('%Y%m%d%H%M', time.localtime())
