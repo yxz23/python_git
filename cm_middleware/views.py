@@ -92,7 +92,8 @@ def show_middleware(request):
         one_node_name = one_node_ID.AppName
         one_node_envi = one_node_ID.EnviName
         one_node_info = " | ".join([one_node_name, one_node_envi])
-        need_show_list.append(one_node_info)
+        if one_node_info not in need_show_list:
+            need_show_list.append(one_node_info)
     
     c = Context({'STATIC_URL': '/static/'})
     
@@ -137,14 +138,46 @@ def replace_word(normal_str):
     for key in convert_dict:
         normal_str = normal_str.replace(key,convert_dict[key])
     return normal_str
+
+
+def get_state_dict(info_dict):
+    res_dict = {}#返回字典{'name' : True}
+    ip_dict = {}#利用该字典求交集{'name' : set(ip)}
+
+    if len(info_dict) == 1:
+        '''如果长度为1，无须求交集，状态设置为False，直接返回'''
+        for key in info_dict:
+            res_dict[key] = False
+        return res_dict
+
+    rc = re.compile(r'(?:\d{1,3}\.?){4}')
+    for key in info_dict:
+        ip_str = info_dict[key]
+        ip_dict[key] = set(rc.findall(ip_str))#获取ip集合
+
+        '''初始状态设置为False'''
+        res_dict[key] = False
+
+    '''遍历求ip交集，如果交集不为空，设置状态为True'''
+    for key in info_dict:
+        s_ip = ip_dict.pop(key)
+        for k_ip in ip_dict:
+            set_info = s_ip & ip_dict[k_ip]
+            if len(set_info) > 0:
+                res_dict[key] = True
+                res_dict[k_ip] = True
+    return res_dict
+
 def middleware_detail(request):
     '''系统环境详情'''
-    s_info = Envi_Relation.objects.all()
+    request_node_name_envi = request.path[:-1].replace("/middleware_detail_", "")
+    source_AppName, source_EnviName = request_node_name_envi.split(" | ")
+    s_info = Envi_Relation.objects.filter(AppID_Source__AppName = source_AppName).filter(AppID_Source__EnviName = source_EnviName)
     relation_pair_dict={}
     source_info_dict={}
     target_info_dict={}
     
-    node_info_dict={}#将原节点和目标节点的IP及服务器类型信息都放在一个字典中
+    node_info_dict={}#将源节点和目标节点的IP及服务器类型信息都放在一个字典中
     
     for one_node_info in s_info:
         source_Id = one_node_info.AppID_Source
@@ -173,9 +206,10 @@ def middleware_detail(request):
             
         
     node_info_dict=dict(source_info_dict.items()+target_info_dict.items())
-            
-   
-    request_node_name_envi = request.path[:-1].replace("/middleware_detail_","").encode("utf-8")
+
+    #获取是否存在相同IP
+    state_dict = get_state_dict(node_info_dict)
+
     #补充ip信息
     if request_node_name_envi in node_info_dict:
         request_node_name_ip = node_info_dict[request_node_name_envi]
@@ -193,14 +227,15 @@ def middleware_detail(request):
     c = Context({'STATIC_URL': '/static/'})
  
     out_title = "系统"
-    #target_list = [val for val in target_info]
-    target_info_list = ["name:'{}',ip:'{}'".format(val,node_info_dict[val]) for val in target_info if val in node_info_dict]
-    c["request_node_name_envi"] = request_node_name_envi  
-    c["request_node_name_ip"] = request_node_name_ip 
-    #c["target_list"] = [val for val in target_list]
+
+    target_info_list = []
+    for val in target_info:
+        if val in node_info_dict:
+            target_info_list.append({'info':"name:'{}',ip:'{}'".format(val, node_info_dict[val]), 'state': state_dict[val]})
+
+    c["request_node_name_envi"] = {'name' : request_node_name_envi, 'state' : state_dict[request_node_name_envi]}
+    c["request_node_name_ip"] = request_node_name_ip
     c["target_list"] = target_info
-    c["target_info_list"] = target_info_list 
-    
-    
+    c["target_info_list"] = target_info_list
     c["out_title"] = out_title#页面标题
     return render_to_response('middleware_detail.html',context_instance=c)

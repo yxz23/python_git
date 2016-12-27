@@ -66,7 +66,7 @@
         
         var option = {
     title : {
-        text: '{{request_node_name_envi}}及其相关环境对接关系',
+        text: '{{request_node_name_envi.name}}及其相关环境对接关系',
         x:'right',
         y:'bottom'
     },
@@ -156,14 +156,16 @@
             scaling: 1.8,
             roam: 'move',
             nodes:[
-                {category:0, name: '{{request_node_name_envi}}', ip:'{{request_node_name_ip}}', value : 30, label: '{{request_node_name_envi}}',
+                {category:0, name: '{{request_node_name_envi.name}}', ip:'{{request_node_name_ip}}', value : 30, label: '{{request_node_name_envi.name}}',
                    itemStyle: {
                         normal: {
                             label: {
                                 textStyle: {
                                     color: 'black',
-                                    fontSize: 10
-                                  
+                                    fontSize: 10,
+                                    {% if request_node_name_envi.state %}
+                                        fontWeight: 'bolder'
+                                    {% endif %}
                                 }
                             }
                         }
@@ -171,13 +173,16 @@
                 },
                 {% autoescape off %}
 	            {% for target in target_info_list %}
-	            	{category:1, {{ target }}, value : 20,
+	            	{category:1, {{ target.info }}, value : 20,
 	            	    itemStyle: {
                         normal: {
                             label: {
                                 textStyle: {
                                     color: 'black',
-                                    fontSize: 7
+                                    fontSize: 7,
+                                    {% if target.state %}
+                                        fontWeight: 'bolder'
+                                    {% endif %}
                                   }
                                 }
                             }
@@ -188,7 +193,7 @@
             ],
            links : [
 	            {% for target in target_list %}
-	            	{source : '{{request_node_name_envi}}', target : '{{ target }}', weight :1},
+	            	{source : '{{request_node_name_envi.name}}', target : '{{ target }}', weight :1},
 	            {% endfor %} 
                 
             ]

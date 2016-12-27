@@ -31,8 +31,11 @@
 		   <ul class="dropdown-menu" role="menu">
 		      <li><a href="#" onclick="set_period(0)">本周</a></li>
 		      <li><a href="#" onclick="set_period(1)">上周</a></li>
+		      <li><a href="#" onclick="set_period(6)">下周</a></li>
+		      <li><a href="#" onclick="set_period(7)">下二周</a></li>
 		      <li><a href="#" onclick="set_period(2)">本月</a></li>
 		      <li><a href="#" onclick="set_period(3)">上月</a></li>
+		      <li><a href="#" onclick="set_period(8)">下月</a></li>
 		      <li><a href="#" onclick="set_period(4)">本年</a></li>		      
 		      <li><a href="#" onclick="set_period(5)">全部</a></li>
 		   </ul>
@@ -137,6 +140,23 @@ return format;
 		last_week_end = new Date(week_start.getFullYear(), week_start.getMonth(), week_start.getDate() - 1);
 	    return [last_week_start,last_week_end]
 	}	
+	
+	function getNextWeek(){
+		//获取本周二至下周一
+		week_start = getThisWeek()[0]
+		next_week_start = new Date(week_start.getFullYear(), week_start.getMonth(), week_start.getDate() + 1);
+		next_week_end = new Date(week_start.getFullYear(), week_start.getMonth(), week_start.getDate() + 7);
+	    return [next_week_start,next_week_end]
+	}
+	
+	function getNext2Week(){
+		//获取下周二至下下下周一
+		week_start = getThisWeek()[1]
+		next_2week_start = new Date(week_start.getFullYear(), week_start.getMonth(), week_start.getDate() + 2);
+		next_2week_end = new Date(week_start.getFullYear(), week_start.getMonth(), week_start.getDate() + 15);
+	    return [next_2week_start,next_2week_end]
+	}	
+	
 	function getThisMonth(){
 		//获取该月的第一天和最后一天
 		var today = new Date();
@@ -151,6 +171,15 @@ return format;
 		last_month_end = new Date(today.getFullYear(), today.getMonth(), 0);
 	    return [last_month_start,last_month_end]
 	}	
+	
+	function getNextMonth(){
+		//获取下月的第一天和最后一天
+		var today = new Date();
+		next_month_start = new Date(today.getFullYear(), today.getMonth()+1, 1);
+		next_month_end = new Date(today.getFullYear(), today.getMonth()+2, 0);
+	    return [next_month_start,next_month_end]
+	}	
+	
 	function getThisYear(){
 		//获取今年的第一天和最后一天
 		var today = new Date();
@@ -175,6 +204,15 @@ return format;
 		}
 		else if(type == 4){
 			period = getThisYear();
+		}
+		else if(type == 6){
+			period = getNextWeek();
+		}
+		else if(type == 7){
+			period = getNext2Week();
+		}
+		else if(type == 8){
+			period = getNextMonth();
 		}
 		
 		$("#datepicker-example1").val(get_date_str(period[0]))
