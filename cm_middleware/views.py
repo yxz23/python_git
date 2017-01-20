@@ -27,8 +27,8 @@ from .models import Envi_Detail,Envi_Relation
 from django.db import connection,transaction
 
 
-ETL_node ="ETL"
-IMIX_node = "IMIX"
+ETL_node ="数据传输中间件"
+IMIX_node = "消息传输中间件"
 
 # Create your views here.
 def update_table_from_wiki(request):

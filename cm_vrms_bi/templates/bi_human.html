@@ -30,13 +30,13 @@
     </table>
 	<div class="row"> 
 	    <div class="span8">
-	    	<div id="main" style="height:650px;width:750px"></div>
+	    	<div id="main" style="height:650px;width:850px"></div>
 		</div>
 		<div class="span1">
 	    	<div id="main3" style="height:650px"></div>
 		</div>
 		<div class="span4" >
-		    <div id="main1" style="height:350px;width:700px"></div>
+		    <div id="main1" style="height:350px;width:800px"></div>
 		    <div id="main2" style="height:300px;width:450px"></div>
 		</div> 
 	</div> 
@@ -89,6 +89,10 @@
         {
             type : 'category',
             splitLine :{show:false},
+			axisLabel : {
+                show:true,
+                interval: '0',    // {number}
+            },
             data : [
                     {% for name in author_name_list %}
 					'{{ name }}',
@@ -119,6 +123,7 @@
                     },
                     label: {
                         show: true,
+						interval: 0,
                         position: 'top',
                         formatter: '{c}'
                     }
@@ -158,6 +163,10 @@ option1 = {
     xAxis : [
         {
             type : 'category',
+			axisLabel : {
+                show:true,
+                interval: '0',    // {number}
+            },
             data : [
                     {% for name in name_list %}
 					'{{ name }}',
@@ -174,7 +183,7 @@ option1 = {
         {
             name:'AB问题',
             type:'bar',
-            itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
+            itemStyle : { normal: {label : {show: true,interval: 0, position: 'insideRight'}}},
             data:[
                    {% for ab in ab_list %}
 					'{{ ab }}',
@@ -216,6 +225,10 @@ option2 = {
     xAxis : [
         {
             type : 'category',
+			axisLabel : {
+                show:true,
+                interval: '0',    // {number}
+            },
             data : [
                     {% for Principal in Principal_list %}
 					'{{ Principal }}',
@@ -245,6 +258,7 @@ option2 = {
                     },
                     label: {
                         show: true,
+						interval: 0,
                         position: 'top',
                         formatter: '{c}'
                     }

@@ -49,11 +49,29 @@ node_projectstage_node_val_map = {'测试准备':'1','UAT1测试':'2','UAT1完�
 
 testreport_info = Report_DetailInfo()
 
+page_step = 15#每页显示的条目数
+
+def get_href_pages(record_count, current_index, parms):
+    '''获取页码列表，并为页码添加超链接'''
+    from .get_page_list import get_page_list
+    from math import ceil
+    page_list = get_page_list(current_index, int(ceil(record_count / float(page_step))))
+    hrefs = ''
+    for page in page_list:
+        if page in [str(current_index), '...']:
+            '''当前页和省略号无需加超链接'''
+            hrefs += ''.join(['<font color=#5e5e5e>', page, '</font> '])
+        else:
+            hrefs += ''.join(['<a href="/test_report_index/?page=', page, parms, '">', page, '</a> ']).replace("&query1=&query2=", '')
+    return hrefs
+
 def test_report_index(request):
     c = Context({'STATIC_URL': '/static/'})
     out_path = "test_report_index"  
     str_need_date_time_start = ""
-    str_need_date_time_end = ""   
+    str_need_date_time_end = ""
+    current_index = int(request.GET["page"]) if "page" in request.GET else 1
+    parms = ''.join(["&query1=", request.GET["query1"] if "query1" in request.GET else '', '&query2=', request.GET["query2"] if "query2" in request.GET else '']).encode("utf-8")
     try:
         str_need_date_time_start = request.GET["query1"].encode("utf-8")#获取搜索框1中的时间
         str_need_date_time_end = request.GET["query2"].encode("utf-8")#获取搜索框2中的时间
@@ -61,10 +79,10 @@ def test_report_index(request):
             str_need_date_time_start = ( datetime.datetime.now() + datetime.timedelta(0 - datetime.datetime.now().weekday())).strftime("%Y-%m-%d")
             
     except:
-        
-        str_need_date_time_start = ( datetime.datetime.now() + datetime.timedelta(0 - datetime.datetime.now().weekday())).strftime("%Y-%m-%d")
-        #str_need_date_time_end = (datetime.datetime.now()+datetime.timedelta(days=7)).strftime("%Y-%m-%d")
-        str_need_date_time_end = ( datetime.datetime.now() + datetime.timedelta(6 - datetime.datetime.now().weekday())).strftime("%Y-%m-%d")
+        if "query1" not in request.GET or "query2" not in request.GET:
+            str_need_date_time_start = ( datetime.datetime.now() + datetime.timedelta(0 - datetime.datetime.now().weekday())).strftime("%Y-%m-%d")
+            #str_need_date_time_end = (datetime.datetime.now()+datetime.timedelta(days=7)).strftime("%Y-%m-%d")
+            str_need_date_time_end = ( datetime.datetime.now() + datetime.timedelta(6 - datetime.datetime.now().weekday())).strftime("%Y-%m-%d")
         
     cursor1 = connection.cursor() 
     cursor2 = connection.cursor() 
@@ -72,6 +90,8 @@ def test_report_index(request):
     report_result = cursor1.fetchall()
     cursor1.close()
     need_out_list = ""
+    record_count = len(report_result)
+    report_result = report_result[(current_index-1)*page_step : current_index*page_step]
     for val in report_result:
         PlanTime,Main_SysName,Main_VersionNum,ProjectName,OverallSchedule,projectStage,testtype1,testtype2 = val
         Main_SysName = word_name_map.get(Main_SysName,"")
@@ -116,6 +136,8 @@ def test_report_index(request):
             print Main_SysName_ver
     cursor2.close()
     c["need_out_list"] = need_out_list
+    c["count"] = record_count
+    c["hrefs"] = get_href_pages(record_count, current_index, parms)
     return render_to_response(out_path+'.html',context_instance=c)
 def show_items(request):
     c = Context({'STATIC_URL': '/static/'})

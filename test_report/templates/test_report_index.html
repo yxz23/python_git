@@ -50,7 +50,10 @@
     </form>
     </tr>
     </table>
-    
+
+    <div style = "margin: 0; font-size: 14px; text-align: right; color: #0d77b6;">
+		<font color="black">共 <strong>{{ count }}</strong> 条数据</font> {{ hrefs }}
+    </div>
     
     <table class="table">
 	   <caption>需上线项目列表</caption>
@@ -69,6 +72,11 @@
 	      {{need_out_list}}
 	   </tbody>
 	</table>
+
+    <div style = "margin: 0; font-size: 14px; text-align: right; color: #0d77b6;">
+		<font color="black">共 <strong>{{ count }}</strong> 条数据</font> {{ hrefs }}
+    </div>
+    <br/>
     
     <div style = "margin: 0; font-size: 11px; text-align: right; color: #487858;">
 		<a href="/upload_file/">| 文件上传</a> |
