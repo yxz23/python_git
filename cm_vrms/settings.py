@@ -48,6 +48,7 @@ INSTALLED_APPS = (
 	'cm_middleware',
     'test_report',
     'cm_vrms_uat_info',
+    'cm_vrms_data',
     
     'xadmin',
     'crispy_forms', 
@@ -74,6 +75,7 @@ MIDDLEWARE_CLASSES = (
 
 
 ROOT_URLCONF = 'cm_vrms_upload.urls'
+
 
 TEMPLATES = [
     {
@@ -102,10 +104,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'cm_vrms',
-        'USER' :'root',
+        'USER' : 'root',
         'PASSWORD' : 'root',
-        'HOST' :'127.0.0.1',
-        'PORT' :'3306'
+        'HOST' : '127.0.0.1',
+        'PORT' : '3306'
     }
 }
 
@@ -134,14 +136,15 @@ MEDIA_URL = '/media/'
 
 #STATICFILES_DIRS = ('/static/',)
 #STATIC_ROOT = os.path.join(os.path.dirname(__file__), 'static').replace('\\','/')
-MEDIA_ROOT = os.path.abspath(os.path.dirname(__file__)) + '/media/'
-MEDIA_ROOT = '/media/'
+MEDIA_ROOT = os.path.abspath(os.path.dirname(__file__)).replace('\\','/') + '/media/'
+#MEDIA_ROOT = '/media/'
+
 
 
 LOGIN_URL = '/login/'
 CRONJOBS = (
     
-    #('16 19 * * *', 'cm_vrms.cm_vrms_baseline.views.update_db_from_work_for_crontab'),
+    #('31 11 * * *', 'cm_vrms.cm_vrms_baseline.views.update_db_from_work_for_crontab'),
     ('0 8 * * *', 'django.core.management.call_command', ['updateCommand']),
-    #('02 19 * * *','cm_vrms.cm_vrms_baseline.views.print_hello', '>test_func_job.log'),
+
 )

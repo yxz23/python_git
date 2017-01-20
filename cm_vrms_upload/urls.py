@@ -8,6 +8,7 @@ from cm_vrms_bi.views import  *
 from cm_vrms_bi import *
 from cm_middleware.views import *
 from test_report.views import *
+from cm_vrms_data import views as data_view
 import os
 
 
@@ -100,6 +101,13 @@ urlpatterns = patterns('',
     (r'^test_report_bar', test_report_bar),
     (r'^test_report_charts', test_report_charts),
     (r'^show_items', show_items),
+
+    (r'^data_index/$', data_view.data_index),
+    (r'^data/(?P<data_info>.+)', data_view.get_json_data),
+    (r'^data_download/(?P<file_name>.+)', data_view.download_file),
+    (r'^script_index/$', data_view.script_index),
+    (r'^script_data/(?P<filter_info>.+)', data_view.get_json_script),
+    (r'^script_download/$', data_view.script_download),
        
 )
 

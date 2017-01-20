@@ -1,0 +1,168 @@
+{% autoescape off %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>配置管理系统</title>
+        <style type="text/css">
+            body{margin: 0; padding: 0;}
+            #left{width: 20%; height: 100%; border: 1px solid #e3e3e3; float: left;}
+            #right{width: 80%; height: 100%; float: right;}
+        </style>
+
+        <link rel="stylesheet" href="/static/css/jquery.fileupload-ui.css">
+        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" language="javascript">
+
+            String.prototype.endsWith = function (endStr) {
+                //判断字符串结尾
+                var d = this.length - endStr.length;
+                return (d >= 0 && this.lastIndexOf(endStr) === d);
+            }
+
+            function update(id) {
+                //通过ajax获取表格信息
+                $.getJSON("/data/" + id + "/",function(data) {
+                    $("#right_table").html(data.table);
+                    $("#right_page").html(data.page)
+                });
+            }
+
+            function div_toggle(item) {
+                //切换折叠状态
+                var class_attr = item.getAttribute("class");
+                if("glyphicon glyphicon-chevron-down" == class_attr)
+                    item.setAttribute("class", "glyphicon glyphicon-chevron-right");
+                else
+                    item.setAttribute("class", "glyphicon glyphicon-chevron-down");
+                $(item).parent().parent().next().toggle();
+            }
+
+            function data_vaild() {
+                //提交前检查数据有效性
+                var choose_name = $("#chooseFile").val();
+                if($("#showName").val() == "") {
+                    alert("请输入名字！");
+                    return false;
+                }
+                else if(choose_name == ""){
+                    alert("请选择文件！");
+                    return false;
+                }
+                else if(!(choose_name.endsWith(".xls") || choose_name.endsWith(".xlsx"))){
+                    alert("请选择合法的Excel文件！");
+                    return false;
+                }
+                else
+                {
+                    //如果显示名称已存在且非同一用户，不得上传
+                    var elements = document.getElementsByClassName("list-group-item");
+                    for(var i = 0; i < elements.length; i++){
+                        if($("#showName").val() == elements[i].text && $("#username").text() != elements[i].getAttribute("title")){
+                            alert("该名称已存在！");
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            function set_modalInfo(text) {
+                //打开模态框时设置显示信息
+                {% if not logined %}
+                    alert("你还没有登录！");
+                    top.location="/login/?next=/data_index/";//账号未登陆时重定向至登录页面
+                {% elif not upload_perm %}
+                    alert("当前用户没有上传权限！");
+                    top.location="/data_index/";
+                {% else %}
+                    $("#myModalLabel").text("添加" + text);
+                    $("#showName").val("");//输入框置空
+                {% endif %}
+            }
+
+            $(document).ready(function () {
+                $("#fold").hide();
+                {% if show_item %}
+                    alert("上传成功");
+                    $("#fold").show();
+                    $("#toggle_icon").attr("class", "glyphicon glyphicon-chevron-down");
+                    $("#sys_" + '{{ show_item }}' + "_1").click();
+                {% endif %}
+            })
+        </script>
+    </head>
+    <body>
+        <div id="left">
+            <div>
+                <div>
+                    <div class="fold_handler" style="float: left; margin: 6px 0">
+                        <i class="glyphicon glyphicon-chevron-right" id="toggle_icon" onclick="div_toggle(this)"></i>
+                    </div>
+                    <div align="right">
+                        <!-- 按钮触发模态框 -->
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#myModal" onclick="set_modalInfo(this.getElementsByTagName('span')[0].innerHTML)">
+                            <i class="glyphicon glyphicon-plus"></i>
+                            <span>系统信息</span>
+                        </button>
+                    </div>
+                    <!--模态框-->
+                </div>
+                <div id="fold">
+                    {{ left_html.sys }}
+                </div>
+            </div>
+        </div>
+        <div id="right">
+            <div style = "margin: 0; font-size: 11px; text-align: right; color: #487858;">
+            当前用户：<a id="username">{{ user }}</a>
+            </div>
+            <div id="right_table">
+                <!--Table-->
+            </div>
+            <div id="right_page" align="right">
+                <!--分页信息-->
+            </div>
+        </div>
+
+        <!-- 模态框（Modal） -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                            &times;
+                        </button>
+                        <h4 class="modal-title" id="myModalLabel">
+                            信息
+                        </h4>
+                    </div>
+                    <form action="/data_index/" method="post" enctype="multipart/form-data" accept-charset="utf-8" onsubmit="return data_vaild()">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="form-inline" align="center">
+                                <label for="itemName">请输入名字</label>
+                                <input type="text" id="showName" name="show_name" placeholder="请输入名字">
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="text-align: center">
+                            <span class="btn btn-success fileinput-button">
+                                <i class="glyphicon glyphicon-plus"></i>
+                                <span>选择文件</span>
+                                <input type="file" id="chooseFile" name="u_file" value="" />
+                            </span>
+                            <button type="submit" class="btn btn-primary start">
+                                <i class="glyphicon glyphicon-upload"></i>
+                                <span>开始上传</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+{% endautoescape %}

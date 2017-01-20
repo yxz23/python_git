@@ -48,6 +48,7 @@ INSTALLED_APPS = (
 	'cm_middleware',
     'test_report',
     'cm_vrms_uat_info',
+    'cm_vrms_data',
     
     'xadmin',
     'crispy_forms', 
@@ -135,8 +136,9 @@ MEDIA_URL = '/media/'
 
 #STATICFILES_DIRS = ('/static/',)
 #STATIC_ROOT = os.path.join(os.path.dirname(__file__), 'static').replace('\\','/')
-MEDIA_ROOT = os.path.abspath(os.path.dirname(__file__)) + '/media/'
-MEDIA_ROOT = '/media/'
+MEDIA_ROOT = os.path.abspath(os.path.dirname(__file__)).replace('\\','/') + '/media/'
+#MEDIA_ROOT = '/media/'
+
 
 
 LOGIN_URL = '/login/'
