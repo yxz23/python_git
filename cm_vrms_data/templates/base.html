@@ -1,0 +1,61 @@
+{% autoescape off %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>配置管理系统</title>
+        <style type="text/css">
+            body{margin:0;padding:0;position:absolute;width:100%;min-height:100%;}
+            #header{background-color:#e7e7e7;margin:0 auto;height:35px;padding:0;}
+            #header_title{float:left; margin-left: 5px; font-size: 25px;}
+            #header_user{float:right;margin-top: 7px;margin-right: 20px;font-size: 15px;}
+            #top{background-color:#fff;height:34px;}
+            #footer{height:24px;margin:0;padding:0;position:absolute;bottom:30px;width:100%;}
+            #footerbox{background-color:#e7e7e7;height:30px;line-height:30px !important;margin:0;padding:0;position:absolute;bottom:0px;width:100%;}
+            .footer{height:30px;line-height:30px !important;margin:0 auto;padding:0;text-align: right;}
+        </style>
+        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+        {% block head_extra %}{% endblock %}
+    </head>
+    <body>
+        <div id="header">
+            <div id="header_title">配置管理系统</div>
+            <div id="header_user">
+                {% if user.is_authenticated %}
+                    当前用户：<a href="/changepwd/">{{ user.username }}</a>&nbsp;&nbsp;&nbsp;
+                    <a href="/logout/">注销</a>
+                {% else %}
+                    <a href="/login/?next={{ request.path }}">登录</a>
+                {% endif %}
+            </div>
+        </div>
+
+
+    {% block content %}
+       <div class="content"></div>
+    {% endblock %}
+
+
+        <div id="footer"></div>
+        <div id="footerbox">
+            <div class="footer">
+                <div style="float: left;">
+                    <a href = "#header">回到顶部</a>&nbsp;&nbsp;&nbsp; &copy;中汇信息技术（上海）有限公司
+                </div>
+                <div style="float: right;">
+                    | <a href="/upload_file/">文件上传</a> |
+                    <a href="/system_detail/">系统详情页</a> |
+                    <a href="/version_detail/">版本详情页</a> |
+                    <a href="/wiki_index/">系统百科页</a> |
+                    <a href="/dataex_detail/">交互信息展示页</a> |
+                    <a href="/cm_baseline/">基线展示页</a> |
+                    <a href="/cm_bi_index/">报表展示页</a> |
+                    <a href="/test_report_index/">测试周报页</a> |
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+{% endautoescape %}

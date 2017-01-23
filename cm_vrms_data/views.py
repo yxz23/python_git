@@ -23,16 +23,16 @@ def data_index(request):
 
     c['logined'] = cur_user.is_authenticated()  # 用户登录状态
     c['upload_perm'] = cur_user.has_perm('cm_vrms_data.table_upload') if cur_user.is_authenticated() else False#上传权限
-    c['left_html'] = data_handler.get_left_html()
+    c['left_html_data'] = data_handler.get_left_data()
     return render_to_response('data_index.html', RequestContext(request, c))
 
 
 def get_json_data(request, data_info):
     '''通过ajax来获取json数据'''
     data_json = {}
-    html_table, html_page = data_handler.get_table_html(data_info)
-    data_json['table'] = html_table
-    data_json['page'] = html_page
+    table_data, page_data = data_handler.get_right_data(data_info)#获取右侧页面所需数据
+    data_json['table'] = table_data
+    data_json['page'] = page_data
     return JsonResponse(data_json)
 
 

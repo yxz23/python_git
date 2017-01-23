@@ -1,140 +1,135 @@
-{% autoescape off %}
-<!DOCTYPE HTML>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>配置管理系统</title>
-        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
-        <script src="/static/js/jquery.min.js"></script>
-        <script src="/static/bootstrap/js/bootstrap.min.js"></script>
-        <script>
-            function download_scripts() {
-                if(0 == $("input[name='script_action']:checked").length)
-                {
-                    alert("未选择任何脚本文件！");
-                    return;
-                }
-                $("#table_form").submit();
-            }
+{% extends "base.html" %}
 
-            function filter(info) {
-                //通过ajax获取表格信息
-                var filter_text = $(info).children(":first").text();
-                var filter_type = $(info).parent().prev().children(":eq(1)").text();
-                if(filter_type == "选择操作系统"){
-                    $("#location_os").text(filter_text)
+{% block head_extra %}
+
+    <script>
+        function download_scripts() {
+            if(0 == $("input[name='script_action']:checked").length)
+            {
+                alert("未选择任何脚本文件！");
+                return;
+            }
+            $("#table_form").submit();
+        }
+
+        function filter(info) {
+            //通过ajax获取表格信息
+            var filter_text = $(info).children(":first").text();
+            var filter_type = $(info).parent().prev().children(":eq(1)").text();
+            if(filter_type == "选择操作系统"){
+                $("#location_os").text(filter_text)
+            }
+            else{
+                $("#location_db").text(filter_text)
+            }
+            var param_info = "/" + $("#location_os").text() + "/" + $("#location_db").text();
+
+            $.getJSON("/script_data" + param_info,function(data) {
+                var tbody_html = ''
+                for(var i = 0; i < data.tbody.length; i++)
+                {
+                    var trow = data.tbody[i];
+                    tbody_html += '<tr class="grid-item"><td class="action-checkbox">' +
+                            '<input name="script_action" type="checkbox" value="' +
+                            trow[1] + '_' + trow[0] + '*' + trow[0] + '"></td> <td>' + trow[0] + '' +
+                            '</td><td data-toggle="tooltip" title="' + trow[3] + '">' + trow[2] + '</td></tr>';
+                }
+                $("tbody").html(tbody_html);
+            });
+        }
+
+        $(document).ready(function (e) {
+            $("#action-toggle").click(function () {
+                if($(this).is(":checked")){
+                    $("input[name='script_action']").prop("checked", true);
                 }
                 else{
-                    $("#location_db").text(filter_text)
+                    $("input[name='script_action']").prop("checked", false);
                 }
-                var param_info = "/" + $("#location_os").text() + "/" + $("#location_db").text();
-
-                $.getJSON("/script_data" + param_info,function(data) {
-                    var tbody_html = ''
-                    for(var i = 0; i < data.tbody.length; i++)
-                    {
-                        var trow = data.tbody[i];
-                        tbody_html += '<tr class="grid-item"><td class="action-checkbox">' +
-                                '<input name="script_action" type="checkbox" value="' +
-                                trow[1] + '_' + trow[0] + '*' + trow[0] + '"></td> <td>' + trow[0] + '' +
-                                '</td><td data-toggle="tooltip" title="' + trow[3] + '">' + trow[2] + '</td></tr>';
-                    }
-                    $("tbody").html(tbody_html);
-                });
-            }
-
-            $(document).ready(function (e) {
-                $("#action-toggle").click(function () {
-                    if($(this).is(":checked")){
-                        $("input[name='script_action']").prop("checked", true);
-                    }
-                    else{
-                        $("input[name='script_action']").prop("checked", false);
-                    }
-                });
             });
+        });
 
-        </script>
-    </head>
-    <body>
-        <div class="container">
-            <div class="row" style="margin: 5px">
-                <div class="dropdown" style="float: left;">
-                    <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-primary" data-target="#"
-                       href="javascript:;">
-                       <span class="glyphicon glyphicon-filter"></span><span id="os_type">选择操作系统</span><span class="caret"> </span>
-                    </a>
+    </script>
+{% endblock %}
 
-                    <ul class="dropdown-menu multi-level" id="menu_id1" role="menu" aria-labelledby="dropdownMenu">
-                        <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>全部操作系统</a></li>
-                        {% for os_name in menu_os %}
-                            <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>{{ os_name }}</a></li>
-                        {% endfor %}
-                        <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>无</a></li>
-                    </ul>
-                </div>
-                <div class="dropdown" style="float: left; margin-left: 10px">
-                    <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-primary" data-target="#"
-                       href="javascript:;">
-                       <span class="glyphicon glyphicon-filter"></span><span id="app_name">选择数据库</span><span class="caret"> </span>
-                    </a>
 
-                    <ul class="dropdown-menu multi-level" id="menu_id2" role="menu" aria-labelledby="dropdownMenu">
-                        <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>全部数据库</a></li>
-                        {% for database_name in menu_database %}
-                            <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>{{ database_name }}</a></li>
-                        {% endfor %}
-                        <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>无</a></li>
-                    </ul>
-                </div>
-                <div class="btn-group" style="float: right;margin-right: 80px">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        <span class="glyphicon glyphicon-share-alt"></span>&nbsp;&nbsp;导出&nbsp;<span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        <li onclick="download_scripts()">
-                            <a href="#">
-                                <span class="glyphicon glyphicon-circle-arrow-down"></span>&nbsp;导出选中文件
-                            </a>
-                        </li>
-                    </ul>
-                </div>
+{% block content %}
+    <div class="content" style="margin-bottom: 30px">
+        <div class="row" style="margin: 5px">
+            <div class="dropdown" style="float: left;">
+                <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-primary" data-target="#"
+                   href="javascript:;">
+                   <span class="glyphicon glyphicon-filter"></span><span id="os_type">选择操作系统</span><span class="caret"> </span>
+                </a>
+
+                <ul class="dropdown-menu multi-level" id="menu_id1" role="menu" aria-labelledby="dropdownMenu">
+                    <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>全部操作系统</a></li>
+                    {% for os_name in menu_os %}
+                        <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>{{ os_name }}</a></li>
+                    {% endfor %}
+                    <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>无</a></li>
+                </ul>
             </div>
-            <div style="margin: 10px">
-                <h4 id="location"><span id="location_os">全部操作系统</span>/<span id="location_db">全部数据库</span></h4>
+            <div class="dropdown" style="float: left; margin-left: 10px">
+                <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-primary" data-target="#"
+                   href="javascript:;">
+                   <span class="glyphicon glyphicon-filter"></span><span id="app_name">选择数据库</span><span class="caret"> </span>
+                </a>
+
+                <ul class="dropdown-menu multi-level" id="menu_id2" role="menu" aria-labelledby="dropdownMenu">
+                    <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>全部数据库</a></li>
+                    {% for database_name in menu_database %}
+                        <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>{{ database_name }}</a></li>
+                    {% endfor %}
+                    <li onclick="filter(this)"><a href="#"><span class="glyphicon glyphicon-filter"></span>无</a></li>
+                </ul>
             </div>
-            <div class="script_table">
-                <form action="/script_download/" method="post" id="table_form" enctype="multipart/form-data" accept-charset="utf-8">
-                    {% csrf_token %}
-                    <div class="results table-responsive">
-                        <table class="table table-bordered table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th scope="col" width="20px">
-                                        <input type="checkbox" id="action-toggle">
-                                    </th>
-                                    <th scope="col">
-                                        脚本文件名
-                                    </th>
-                                    <th scope="col">
-                                        脚本文件功能描述
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for trow in trows %}
-                                    <tr class="grid-item">
-                                        <td class="action-checkbox"><input name="script_action" type="checkbox" value="{{ trow.1 }}_{{ trow.0 }}*{{ trow.0 }}"></td>
-                                        <td>{{ trow.0 }}</td>
-                                        <td data-toggle="tooltip" title="{{ trow.3 }}">{{ trow.2 }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </form>
+            <div class="btn-group" style="float: right;margin-right: 80px">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-share-alt"></span>&nbsp;&nbsp;导出&nbsp;<span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li onclick="download_scripts()">
+                        <a href="#">
+                            <span class="glyphicon glyphicon-circle-arrow-down"></span>&nbsp;导出选中文件
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
-    </body>
-</html>
-{% endautoescape %}
+        <div style="margin: 10px">
+            <h4 id="location">当前选择：<span id="location_os">全部操作系统</span>/<span id="location_db">全部数据库</span></h4>
+        </div>
+        <div class="script_table">
+            <form action="/script_download/" method="post" id="table_form" enctype="multipart/form-data" accept-charset="utf-8">
+                {% csrf_token %}
+                <div class="results table-responsive">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col" width="20px">
+                                    <input type="checkbox" id="action-toggle">
+                                </th>
+                                <th scope="col">
+                                    脚本文件名
+                                </th>
+                                <th scope="col">
+                                    脚本文件功能描述
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trow in trows %}
+                                <tr class="grid-item">
+                                    <td class="action-checkbox"><input name="script_action" type="checkbox" value="{{ trow.1 }}_{{ trow.0 }}*{{ trow.0 }}"></td>
+                                    <td>{{ trow.0 }}</td>
+                                    <td data-toggle="tooltip" title="{{ trow.3 }}">{{ trow.2 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

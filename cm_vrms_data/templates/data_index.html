@@ -1,100 +1,135 @@
-{% autoescape off %}
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>配置管理系统</title>
-        <style type="text/css">
-            body{margin: 0; padding: 0;}
-            #left{width: 20%; height: 100%; border: 1px solid #e3e3e3; float: left;}
-            #right{width: 80%; height: 100%; float: right;}
-        </style>
+{% extends "base.html" %}
 
-        <link rel="stylesheet" href="/static/css/jquery.fileupload-ui.css">
-        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
-        <script src="/static/js/jquery.min.js"></script>
-        <script src="/static/bootstrap/js/bootstrap.min.js"></script>
-        <script type="text/javascript" language="javascript">
+{% block head_extra %}
+    <style type="text/css">
+        body{margin: 0; padding: 0;}
+        #left{width: 20%; height: 100%; border: 1px solid #e3e3e3; float: left;}
+        #right{width: 80%; height: 100%; float: right;}
+    </style>
 
-            String.prototype.endsWith = function (endStr) {
-                //判断字符串结尾
-                var d = this.length - endStr.length;
-                return (d >= 0 && this.lastIndexOf(endStr) === d);
-            }
+    <link rel="stylesheet" href="/static/css/jquery.fileupload-ui.css">
 
-            function update(id) {
-                //通过ajax获取表格信息
-                $.getJSON("/data/" + id + "/",function(data) {
-                    $("#right_table").html(data.table);
-                    $("#right_page").html(data.page)
-                });
-            }
+    <script type="text/javascript" language="javascript">
 
-            function div_toggle(item) {
-                //切换折叠状态
-                var class_attr = item.getAttribute("class");
-                if("glyphicon glyphicon-chevron-down" == class_attr)
-                    item.setAttribute("class", "glyphicon glyphicon-chevron-right");
-                else
-                    item.setAttribute("class", "glyphicon glyphicon-chevron-down");
-                $(item).parent().parent().next().toggle();
-            }
+        String.prototype.endsWith = function (endStr) {
+            //判断字符串结尾
+            var d = this.length - endStr.length;
+            return (d >= 0 && this.lastIndexOf(endStr) === d);
+        }
 
-            function data_vaild() {
-                //提交前检查数据有效性
-                var choose_name = $("#chooseFile").val();
-                if($("#showName").val() == "") {
-                    alert("请输入名字！");
-                    return false;
+        function update(id) {
+            //通过ajax获取表格信息
+            $.getJSON("/data/" + id + "/",function(data) {
+                //设置table html
+                //$("#right_table").html(data.table);
+                console.log(data.table);
+                var table_html = '<div style="margin-top:15px"><div style="text-align:center;font-size:large;font-weight:bolder">' +
+                        data.table[0] + '</div><div class="btn-group" style="float:right;margin:-20px 80px 20px 0">' +
+                        '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">' +
+                        '<span class="glyphicon glyphicon-share-alt"></span>&nbsp;&nbsp;导出<span class="caret"></span>' +
+                        '</button><ul class="dropdown-menu" role="menu"><li><a href="/data_download/' + data.table[0] + '">' +
+                        '<span class="glyphicon glyphicon-circle-arrow-down"></span>&nbsp;导出Excel</a></li></ul></div></div>' +
+                        '<table class="table table-condensed table-hover table-bordered"><thead><tr>';
+                for(var index=0; index<data.table[1].length; index++){
+                    table_html += '<th>' + data.table[1][index] + '</th>';
                 }
-                else if(choose_name == ""){
-                    alert("请选择文件！");
-                    return false;
+                table_html += '</tr></thead><tbody>';
+                for(var tr_index=0; tr_index<data.table[2].length; tr_index++){
+                    table_html += '<tr>';
+                    for(var td_index=0; td_index<data.table[2][tr_index].length; td_index++){
+                        table_html += '<td>' + data.table[2][tr_index][td_index] + '</td>';
+                    }
+                    table_html += '</tr>';
                 }
-                else if(!(choose_name.endsWith(".xls") || choose_name.endsWith(".xlsx"))){
-                    alert("请选择合法的Excel文件！");
-                    return false;
-                }
-                else
-                {
-                    //如果显示名称已存在且非同一用户，不得上传
-                    var elements = document.getElementsByClassName("list-group-item");
-                    for(var i = 0; i < elements.length; i++){
-                        if($("#showName").val() == elements[i].text && $("#username").text() != elements[i].getAttribute("title")){
-                            alert("该名称已存在！");
-                            return false;
-                        }
+                table_html += '</tbody></table>';
+                $("#right_table").html(table_html);
+
+                //设置页码html
+                var page_html = '<ul class="pagination">';
+                for (var index = 0; index < data.page[2].length; index++) {
+                    page = data.page[2][index];
+                    if (page == data.page[1] || page == "...") {
+                        page_html += '<li class="disabled"><a>' + page + '</a></li>';
+                    }
+                    else {
+                        page_html += '<li><a href="#" onclick="update(\'' +
+                                data.page[0] + '_' + page + '\')">' + page + '</a></li>';
                     }
                 }
-                return true;
-            }
+                $("#right_page").html(page_html);
+            });
+        }
 
-            function set_modalInfo(text) {
-                //打开模态框时设置显示信息
-                {% if not logined %}
-                    alert("你还没有登录！");
-                    top.location="/login/?next=/data_index/";//账号未登陆时重定向至登录页面
-                {% elif not upload_perm %}
-                    alert("当前用户没有上传权限！");
-                    top.location="/data_index/";
-                {% else %}
-                    $("#myModalLabel").text("添加" + text);
-                    $("#showName").val("");//输入框置空
-                {% endif %}
-            }
 
-            $(document).ready(function () {
-                $("#fold").hide();
-                {% if show_item %}
-                    alert("上传成功");
-                    $("#fold").show();
-                    $("#toggle_icon").attr("class", "glyphicon glyphicon-chevron-down");
-                    $("#sys_" + '{{ show_item }}' + "_1").click();
-                {% endif %}
-            })
-        </script>
-    </head>
-    <body>
+        function div_toggle(item) {
+            //切换折叠状态
+            var class_attr = item.getAttribute("class");
+            if("glyphicon glyphicon-chevron-down" == class_attr)
+                item.setAttribute("class", "glyphicon glyphicon-chevron-right");
+            else
+                item.setAttribute("class", "glyphicon glyphicon-chevron-down");
+            $(item).parent().parent().next().toggle();
+        }
+
+        function data_vaild() {
+            //提交前检查数据有效性
+            var choose_name = $("#chooseFile").val();
+            if($("#showName").val() == "") {
+                alert("请输入名字！");
+                return false;
+            }
+            else if(choose_name == ""){
+                alert("请选择文件！");
+                return false;
+            }
+            else if(!(choose_name.endsWith(".xls") || choose_name.endsWith(".xlsx"))){
+                alert("请选择合法的Excel文件！");
+                return false;
+            }
+            else
+            {
+                //如果显示名称已存在且非同一用户，不得上传
+                var elements = document.getElementsByClassName("list-group-item");
+                for(var i = 0; i < elements.length; i++){
+                    if($("#showName").val() == elements[i].text && $("#username").text() != elements[i].getAttribute("title")){
+                        alert("该名称已存在！");
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function set_modalInfo(text) {
+            //打开模态框时设置显示信息
+            {% if not logined %}
+                alert("你还没有登录！");
+                top.location="/login/?next=/data_index/";//账号未登陆时重定向至登录页面
+            {% elif not upload_perm %}
+                alert("当前用户没有上传权限！");
+                top.location="/data_index/";
+            {% else %}
+                $("#myModalLabel").text("添加" + text);
+                $("#showName").val("");//输入框置空
+            {% endif %}
+        }
+
+        $(document).ready(function () {
+            $("#fold").hide();
+            {% if show_item %}
+                alert("上传成功");
+                $("#fold").show();
+                $("#toggle_icon").attr("class", "glyphicon glyphicon-chevron-down");
+                $("#sys_" + '{{ show_item }}' + "_1").click();
+            {% endif %}
+        })
+    </script>
+{% endblock %}
+
+
+{% block content %}
+    <div class="content" style="margin-top: 10px">
+    <div>
         <div id="left">
             <div>
                 <div>
@@ -111,58 +146,55 @@
                     <!--模态框-->
                 </div>
                 <div id="fold">
-                    {{ left_html.sys }}
+                    {% for info in left_html_data.sys %}
+                        <a href="#" class="list-group-item" id="sys_{{ info.0 }}_1" data-toggle="tooltip" data-placement="top" title="{{ info.1 }}" onclick="update(id)">{{ info.0 }}</a>
+                    {% endfor %}
                 </div>
             </div>
         </div>
         <div id="right">
-            <div style = "margin: 0; font-size: 11px; text-align: right; color: #487858;">
-            当前用户：<a id="username">{{ user }}</a>
-            </div>
             <div id="right_table">
                 <!--Table-->
             </div>
-            <div id="right_page" align="right">
+            <div id="right_page" align="right" style="margin-bottom: 30px">
                 <!--分页信息-->
             </div>
         </div>
-
-        <!-- 模态框（Modal） -->
-        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                            &times;
-                        </button>
-                        <h4 class="modal-title" id="myModalLabel">
-                            信息
-                        </h4>
-                    </div>
-                    <form action="/data_index/" method="post" enctype="multipart/form-data" accept-charset="utf-8" onsubmit="return data_vaild()">
-                        {% csrf_token %}
-                        <div class="modal-body">
-                            <div class="form-inline" align="center">
-                                <label for="itemName">请输入名字</label>
-                                <input type="text" id="showName" name="show_name" placeholder="请输入名字">
-                            </div>
-                        </div>
-                        <div class="modal-footer" style="text-align: center">
-                            <span class="btn btn-success fileinput-button">
-                                <i class="glyphicon glyphicon-plus"></i>
-                                <span>选择文件</span>
-                                <input type="file" id="chooseFile" name="u_file" value="" />
-                            </span>
-                            <button type="submit" class="btn btn-primary start">
-                                <i class="glyphicon glyphicon-upload"></i>
-                                <span>开始上传</span>
-                            </button>
-                        </div>
-                    </form>
+    </div>
+    </div>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        信息
+                    </h4>
                 </div>
+                <form action="/data_index/" method="post" enctype="multipart/form-data" accept-charset="utf-8" onsubmit="return data_vaild()">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="form-inline" align="center">
+                            <label for="itemName">请输入名字</label>
+                            <input type="text" id="showName" name="show_name" placeholder="请输入名字">
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="text-align: center">
+                        <span class="btn btn-success fileinput-button">
+                            <i class="glyphicon glyphicon-plus"></i>
+                            <span>选择文件</span>
+                            <input type="file" id="chooseFile" name="u_file" value="" />
+                        </span>
+                        <button type="submit" class="btn btn-primary start">
+                            <i class="glyphicon glyphicon-upload"></i>
+                            <span>开始上传</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </body>
-</html>
-
-{% endautoescape %}
+    </div>
+{% endblock %}

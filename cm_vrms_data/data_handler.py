@@ -64,65 +64,39 @@ def upload_file(f, show_name, user_name):#将文件上传到指定位置
     return True
 
 
-def get_left_html():
-    html_dict = {'sys': ''}
+def get_left_data():
+    '''返回左侧页面所需数据列表'''
+    info_dict = {'sys': []}
     for info in Upload_Table.objects.all():
-        html_dict['sys'] = ''.join(
-            [html_dict['sys'],
-             '<a href="#" class="list-group-item" id="sys_',
-             info.ShowName,
-             '_1" data-toggle="tooltip" data-placement="top" title="',
-             info.UserName,
-             '" onclick="update(id)">',
-             info.ShowName, '</a>'])
-    return html_dict
+        info_dict['sys'].append((info.ShowName, info.UserName))
+    return info_dict
 
 
-def get_table_html(data_info):
+def get_right_data(data_info):
     '''data_info 格式：sys_fileName_currentPage'''
     info_list = data_info.encode('utf-8').replace('/', '').split('_')
     table_name = '_'.join(info_list[1 : -1]).strip('_')#获取表名
     current_page = int(info_list[-1])#获取当前页码
     file_name = ''.join([_file_path, '/', table_name, '.csv']).decode('utf-8')
-    table_html = '<div style="margin-top:15px"><div style="text-align:center;font-size:large;font-weight:bolder">{0}</div>'\
-                 '<div class="btn-group" style="float:right;margin:-20px 80px 20px 0">'\
-                 '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">'\
-                 '<span class="glyphicon glyphicon-share-alt"></span>&nbsp;&nbsp;导出<span class="caret"></span>'\
-                 '</button><ul class="dropdown-menu" role="menu"><li><a href="/data_download/{0}">'\
-                 '<span class="glyphicon glyphicon-circle-arrow-down"></span>&nbsp;导出Excel</a></li></ul></div></div>' \
-                 '<table class="table table-condensed table-hover table-bordered"><thead><tr>'.format(table_name)
     with open(file_name) as f_info:
         head_info = f_info.readline()  # 表头信息
         head_info = head_info.strip().split('\t')
-        for item in head_info:
-            table_html = ''.join([table_html, '<th>', item, '</th>'])
-        table_html += '</tr></thead><tbody>'
-        body_info = [val.strip().split('\t') for val in f_info.readlines()]
-        for row_info in body_info[(current_page - 1) * _page_step : current_page * _page_step]:
-            '''只截取需要显示的数据行'''
-            table_html += '<tr>'
-            for item in row_info:
-                table_html = ''.join([table_html, '<td>', item, '</td>'])
-            table_html += '</tr>'
-        table_html += '</tbody></table>'
-    page_html = get_page_html(len(body_info), data_info)#根据总记录数和当前页信息获取页码html
-    return table_html, page_html
+        body_info = [val.strip().split('\t') for val in f_info.readlines()]#表内容信息
+        tbody_info = body_info[(current_page - 1) * _page_step : current_page * _page_step]#截取一页表内表内容
+
+    table_data = table_name, head_info, tbody_info#(表名，表头信息列表，表内容信息列表)
+    page_data = get_page_data(len(body_info), data_info)#根据总记录数和当前页信息获取页码html
+
+    return table_data, page_data
 
 
-def get_page_html(record_count, data_info):
-    '''获取页码列表，并为页码添加超链接'''
+def get_page_data(record_count, data_info):
+    '''获取页码列表页所需数据(链接对应url，当前页码，页码列表)'''
     info_list = data_info.encode('utf-8').replace('/', '').split('_')
     current_page = int(info_list[-1])
     file_url = '_'.join(info_list[:-1])
     page_list = get_page_list(current_page, int(ceil(record_count / float(_page_step))))
-    page_html = '<ul class="pagination">'
-    for page in page_list:
-        if page in [str(current_page), '...']:
-            '''当前页和省略号无需加超链接'''
-            page_html += ''.join(['<li class="disabled"><a>', page, '</a></li>'])
-        else:
-            page_html += ''.join(['<li><a href="#"', 'onclick="update(\'', file_url, '_', page, '\')">', page, '</a></li>'])
-    return page_html
+    return file_url, str(current_page), page_list
 
 
 def find_file(file_name, path_type='export'):
